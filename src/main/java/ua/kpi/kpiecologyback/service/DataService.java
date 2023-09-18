@@ -9,6 +9,8 @@ import ua.kpi.kpiecologyback.repository.CompanyRepository;
 import ua.kpi.kpiecologyback.repository.PollutantRepository;
 import ua.kpi.kpiecologyback.repository.PollutionRepository;
 
+import java.util.List;
+
 @Service
 public class DataService {
     private final CompanyRepository companyRepository;
@@ -19,5 +21,9 @@ public class DataService {
         this.companyRepository = companyRepository;
         this.pollutantRepository = pollutantRepository;
         this.pollutionRepository = pollutionRepository;
+    }
+
+    public List<Pollution> getAllPollution() {
+        return pollutionRepository.findAll();
     }
 }
