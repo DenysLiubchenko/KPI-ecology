@@ -3,13 +3,12 @@ package ua.kpi.kpiecologyback.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.bind.annotation.*;
+import ua.kpi.kpiecologyback.domain.Company;
 import ua.kpi.kpiecologyback.domain.Pollutant;
 import ua.kpi.kpiecologyback.domain.Pollution;
 import ua.kpi.kpiecologyback.service.DataService;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
 import java.util.List;
 
@@ -22,23 +21,63 @@ public class DataController {
         this.dataService = dataService;
     }
 
-    @PostMapping("/uploadCompanies")
-    public void uploadCompanies(@RequestParam("file") MultipartFile file) throws IOException {
-        dataService.uploadCompanies(new String(file.getBytes(), "WINDOWS-1251"));
+    @PostMapping("/upload/company")
+    public void uploadCompany(@RequestParam("file") MultipartFile file) throws IOException {
+        dataService.uploadCompany(new String(file.getBytes(), "WINDOWS-1251"));
     }
 
-    @PostMapping("/uploadPollutants")
-    public void uploadPollutants(@RequestParam("file") MultipartFile file) throws IOException {
-        dataService.uploadPollutants(new String(file.getBytes(), "WINDOWS-1251"));
+    @PostMapping("/upload/pollutant")
+    public void uploadPollutant(@RequestParam("file") MultipartFile file) throws IOException {
+        dataService.uploadPollutant(new String(file.getBytes(), "WINDOWS-1251"));
     }
 
-    @PostMapping("/uploadPollutions")
-    public void uploadPollutions(@RequestParam("file") MultipartFile file) throws IOException {
-        dataService.uploadPollutions(new String(file.getBytes(), "WINDOWS-1251"));
+    @PostMapping("/upload/pollution")
+    public void uploadPollution(@RequestParam("file") MultipartFile file) throws IOException {
+        dataService.uploadPollution(new String(file.getBytes(), "WINDOWS-1251"));
     }
 
-    @GetMapping("/pollution")
+    @GetMapping("/get/company")
+    public List<Company> getAllCompany () {
+        return dataService.getAllCompany();
+    }
+
+    @GetMapping("/get/pollutant")
+    public List<Pollutant> getAllPollutant () {
+        return dataService.getAllPollutant();
+    }
+
+    @GetMapping("/get/pollution")
     public List<Pollution> getAllPollution () {
         return dataService.getAllPollution();
+    }
+
+    @PostMapping("/update/company")
+    public void updateCompany (@RequestBody Company company) {
+        dataService.updateCompany(company);
+    }
+
+    @PostMapping("/update/pollutant")
+    public void updatePollutant (@RequestBody Pollutant pollutant) {
+        dataService.updatePollutant(pollutant);
+    }
+
+    @PostMapping("/update/pollution")
+    public void updatePollution (@RequestBody Pollution pollution) {
+        dataService.updatePollution(pollution);
+    }
+
+    @PostMapping("/delete/company")
+    public void deleteCompany (@RequestParam long id) {
+        dataService.deleteCompany(id);
+    }
+
+    @PostMapping("/delete/pollutant")
+    public void deletePollutant (@RequestParam long id) {
+        dataService.deletePollutant(id);
+    }
+
+    @PostMapping("/delete/pollution")
+    public void deletePollution (@RequestParam long id) {
+        dataService.deletePollution(id);
     }
 }

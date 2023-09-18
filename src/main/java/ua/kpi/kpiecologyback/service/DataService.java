@@ -20,20 +20,26 @@ public class DataService {
     private final CompanyRepository companyRepository;
     private final PollutantRepository pollutantRepository;
     private final PollutionRepository pollutionRepository;
+    private final Pattern pattern = Pattern.compile("(?<=,\").*(?=\",)|[^,\"]+");
     @Autowired
     public DataService(CompanyRepository companyRepository, PollutantRepository pollutantRepository, PollutionRepository pollutionRepository) {
         this.companyRepository = companyRepository;
         this.pollutantRepository = pollutantRepository;
         this.pollutionRepository = pollutionRepository;
     }
+    public List<Company> getAllCompany() {
+        return companyRepository.findAll();
+    }
+
+    public List<Pollutant> getAllPollutant() {
+        return pollutantRepository.findAll();
+    }
 
     public List<Pollution> getAllPollution() {
         return pollutionRepository.findAll();
     }
 
-    private Pattern pattern = Pattern.compile("(?<=,\").*(?=\",)|[^,\"]+");
-
-    public void uploadCompanies(String data) {
+    public void uploadCompany(String data) {
         Scanner scanner = new Scanner(data);
         scanner.nextLine();
 
@@ -56,7 +62,7 @@ public class DataService {
         }
     }
 
-    public void uploadPollutants(String data) {
+    public void uploadPollutant(String data) {
         Scanner scanner = new Scanner(data);
         scanner.nextLine();
 
@@ -79,7 +85,7 @@ public class DataService {
         }
     }
 
-    public void uploadPollutions(String data) {
+    public void uploadPollution(String data) {
         Scanner scanner = new Scanner(data);
         scanner.nextLine();
 
@@ -107,5 +113,29 @@ public class DataService {
 
             pollutionRepository.save(pollution);
         }
+    }
+
+    public void updateCompany(Company company) {
+        companyRepository.save(company);
+    }
+
+    public void updatePollutant(Pollutant pollutant) {
+        pollutantRepository.save(pollutant);
+    }
+
+    public void updatePollution(Pollution pollution) {
+        pollutionRepository.save(pollution);
+    }
+
+    public void deleteCompany(long id) {
+        companyRepository.deleteById(id);
+    }
+
+    public void deletePollutant(long id) {
+        pollutantRepository.deleteById(id);
+    }
+
+    public void deletePollution(long id) {
+        pollutantRepository.deleteById(id);
     }
 }
