@@ -15,11 +15,14 @@ import lombok.Setter;
 public class Company {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long idCompany;
+    private Long id;
 
     @Column(nullable = false)
-    private String nameCompany;
+    private String companyName;
 
     @Column(nullable = false)
-    private String description;
+    private String activity;
+
+    @Column(nullable = false)
+    private String location;
 }

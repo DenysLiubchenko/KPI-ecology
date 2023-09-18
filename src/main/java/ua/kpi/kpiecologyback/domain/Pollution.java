@@ -17,7 +17,7 @@ import java.sql.Date;
 public class Pollution {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long idPollution;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "company_id", nullable = false)
@@ -28,7 +28,7 @@ public class Pollution {
     private Pollutant pollutant;
 
     @Column(nullable = false)
-    private Double valuePollution;
+    private Double pollutionValue;
 
     @Column(nullable = false)
     private Date date;

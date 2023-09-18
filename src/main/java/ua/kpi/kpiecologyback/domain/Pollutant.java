@@ -12,14 +12,14 @@ import lombok.*;
 public class Pollutant {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long idPollutant;
+    private Long id;
 
     @Column(nullable = false)
     private String namePollutant;
 
     @Column(nullable = false)
-    private Integer gdk;
+    private Integer massFlowRate;
 
     @Column(nullable = false)
-    private Integer massConsumption;
+    private Integer tlv;
 }
