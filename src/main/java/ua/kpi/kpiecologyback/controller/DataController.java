@@ -21,19 +21,34 @@ public class DataController {
         this.dataService = dataService;
     }
 
-    @PostMapping("/upload/company")
+    @PostMapping("/upload/csv/company")
     public void uploadCompany(@RequestParam("file") MultipartFile file) throws IOException {
         dataService.uploadCompany(new String(file.getBytes(), "WINDOWS-1251"));
     }
 
-    @PostMapping("/upload/pollutant")
+    @PostMapping("/upload/csv/pollutant")
     public void uploadPollutant(@RequestParam("file") MultipartFile file) throws IOException {
         dataService.uploadPollutant(new String(file.getBytes(), "WINDOWS-1251"));
     }
 
-    @PostMapping("/upload/pollution")
+    @PostMapping("/upload/csv/pollution")
     public void uploadPollution(@RequestParam("file") MultipartFile file) throws IOException {
         dataService.uploadPollution(new String(file.getBytes(), "WINDOWS-1251"));
+    }
+
+    @PostMapping("/upload/company")
+    public void uploadCompany(@RequestBody Company company) {
+        dataService.uploadCompany(company);
+    }
+
+    @PostMapping("/upload/pollutant")
+    public void uploadPollutant(@RequestBody Pollutant pollutant) {
+        dataService.uploadPollutant(pollutant);
+    }
+
+    @PostMapping("/upload/csv/pollution")
+    public void uploadPollution(@RequestBody Pollution pollution) {
+        dataService.uploadPollution(pollution);
     }
 
     @GetMapping("/get/company")

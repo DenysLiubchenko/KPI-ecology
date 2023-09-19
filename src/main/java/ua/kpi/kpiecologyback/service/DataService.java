@@ -115,6 +115,18 @@ public class DataService {
         }
     }
 
+    public void uploadCompany(Company company) {
+        companyRepository.save(company);
+    }
+
+    public void uploadPollutant(Pollutant pollutant) {
+        pollutantRepository.save(pollutant);
+    }
+
+    public void uploadPollution(Pollution pollution) {
+        pollutionRepository.save(pollution);
+    }
+
     public void updateCompany(Company company) {
         companyRepository.save(company);
     }
