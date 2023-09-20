@@ -6,6 +6,7 @@ import org.springframework.web.multipart.MultipartFile;
 import ua.kpi.kpiecologyback.domain.Company;
 import ua.kpi.kpiecologyback.domain.Pollutant;
 import ua.kpi.kpiecologyback.domain.Pollution;
+import ua.kpi.kpiecologyback.dto.SummaryDTO;
 import ua.kpi.kpiecologyback.service.DataService;
 
 import java.io.IOException;
@@ -49,6 +50,11 @@ public class DataController {
     @PostMapping("/upload/csv/pollution")
     public void uploadPollution(@RequestBody Pollution pollution) {
         dataService.uploadPollution(pollution);
+    }
+
+    @GetMapping("/get")
+    public List<SummaryDTO> getAllSummary () {
+        return dataService.getAllSummary();
     }
 
     @GetMapping("/get/company")

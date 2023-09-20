@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import ua.kpi.kpiecologyback.domain.Company;
 import ua.kpi.kpiecologyback.domain.Pollutant;
 import ua.kpi.kpiecologyback.domain.Pollution;
+import ua.kpi.kpiecologyback.dto.SummaryDTO;
 import ua.kpi.kpiecologyback.repository.CompanyRepository;
 import ua.kpi.kpiecologyback.repository.PollutantRepository;
 import ua.kpi.kpiecologyback.repository.PollutionRepository;
@@ -27,6 +28,15 @@ public class DataService {
         this.pollutantRepository = pollutantRepository;
         this.pollutionRepository = pollutionRepository;
     }
+
+    public List<SummaryDTO> getAllSummary() {
+        return pollutionRepository.findAll().stream()
+                .map(pollution-> new SummaryDTO(pollution.getCompany().getCompanyName(),
+                        pollution.getPollutant().getPollutantName(), pollution.getPollutionValue(),
+                        pollution.getPollutant().getMfr(), pollution.getPollutant().getTlv(), pollution.getYear()))
+                .toList();
+    }
+
     public List<Company> getAllCompany() {
         return companyRepository.findAll();
     }
@@ -73,13 +83,13 @@ public class DataService {
             Pollutant pollutant = new Pollutant();
 
             matcher.find();
-            pollutant.setNamePollutant(matcher.group());
+            pollutant.setPollutantName(matcher.group());
 
             matcher.find();
             pollutant.setTlv(Integer.parseInt(matcher.group()));
 
             matcher.find();
-            pollutant.setMassFlowRate(Integer.parseInt(matcher.group()));
+            pollutant.setMfr(Integer.parseInt(matcher.group()));
 
             pollutantRepository.save(pollutant);
         }

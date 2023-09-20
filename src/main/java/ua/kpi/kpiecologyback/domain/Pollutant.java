@@ -19,12 +19,12 @@ public class Pollutant {
 
     @NotBlank(message = "Value must not be blank")
     @Column(nullable = false)
-    private String namePollutant;
+    private String pollutantName;
 
     @NotNull(message = "Value must not be null")
     @Min(value = 0, message = "Value must be positive")
     @Column(nullable = false)
-    private Integer massFlowRate;
+    private Integer mfr;
 
     @NotNull(message = "Value must not be null")
     @Min(value = 0, message = "Value must be positive")
