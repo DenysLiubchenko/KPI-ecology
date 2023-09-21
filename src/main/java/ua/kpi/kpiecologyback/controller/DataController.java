@@ -13,7 +13,6 @@ import java.io.IOException;
 
 import java.util.List;
 
-@CrossOrigin("*")
 @RestController
 @RequestMapping("/data")
 public class DataController {
