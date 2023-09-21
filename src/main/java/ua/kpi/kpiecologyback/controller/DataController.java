@@ -13,6 +13,7 @@ import java.io.IOException;
 
 import java.util.List;
 
+@CrossOrigin("*")
 @RestController
 @RequestMapping("/data")
 public class DataController {
@@ -47,7 +48,7 @@ public class DataController {
         dataService.uploadPollutant(pollutant);
     }
 
-    @PostMapping("/upload/csv/pollution")
+    @PostMapping("/upload/pollution")
     public void uploadPollution(@RequestBody Pollution pollution) {
         dataService.uploadPollution(pollution);
     }
