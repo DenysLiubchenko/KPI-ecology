@@ -97,8 +97,14 @@ public class DataController {
         dataService.deletePollutant(id);
     }
 
+//    @PostMapping("/delete/pollution")
+//    public void deletePollution (@RequestParam long id) {
+//        dataService.deletePollution(id);
+//    }
+
     @PostMapping("/delete/pollution")
-    public void deletePollution (@RequestParam long id) {
-        dataService.deletePollution(id);
+    public void deletePollution (@RequestBody List<Long> ids) {
+        dataService.deletePollution(ids);
     }
+
 }

@@ -158,6 +158,9 @@ public class DataService {
     }
 
     public void deletePollution(long id) {
-        pollutantRepository.deleteById(id);
+        pollutionRepository.deleteById(id);
+    }
+    public void deletePollution(List<Long> ids) {
+        pollutionRepository.deleteAllByIdInBatch(ids);
     }
 }
