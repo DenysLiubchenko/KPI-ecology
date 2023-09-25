@@ -60,7 +60,7 @@ public class DataService {
             Company company = new Company();
 
             matcher.find();
-            company.setCompanyName(matcher.group());
+            company.setCompanyName(matcher.group().trim());
 
             matcher.find();
             company.setActivity(matcher.group());
@@ -83,7 +83,7 @@ public class DataService {
             Pollutant pollutant = new Pollutant();
 
             matcher.find();
-            pollutant.setPollutantName(matcher.group());
+            pollutant.setPollutantName(matcher.group().trim());
 
             matcher.find();
             pollutant.setTlv(Integer.parseInt(matcher.group()));
@@ -105,14 +105,12 @@ public class DataService {
 
             Pollution pollution = new Pollution();
 
-
             matcher.find();
-            System.out.println(Long.parseLong(matcher.group()));
-            Company company = companyRepository.findById(Long.parseLong(matcher.group())).orElseThrow();
+            Company company = companyRepository.findByCompanyName(matcher.group().trim());
             pollution.setCompany(company);
 
             matcher.find();
-            Pollutant pollutant = pollutantRepository.findById(Long.parseLong(matcher.group())).orElseThrow();
+            Pollutant pollutant = pollutantRepository.findByPollutantName(matcher.group().trim());
             pollution.setPollutant(pollutant);
 
             matcher.find();
