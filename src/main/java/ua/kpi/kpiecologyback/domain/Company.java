@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -29,4 +31,7 @@ public class Company {
     @NotBlank(message = "Value must not be blank")
     @Column(nullable = false)
     private String location;
+
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL)
+    private List<Pollution> pollutions;
 }

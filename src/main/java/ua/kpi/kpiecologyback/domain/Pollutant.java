@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+import java.util.List;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -30,4 +32,7 @@ public class Pollutant {
     @Min(value = 0, message = "Value must be positive")
     @Column(nullable = false)
     private Integer tlv;
+
+    @OneToMany(mappedBy = "pollutant", cascade = CascadeType.ALL)
+    private List<Pollution> pollutions;
 }

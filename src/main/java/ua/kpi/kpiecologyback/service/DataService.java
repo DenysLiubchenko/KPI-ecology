@@ -46,7 +46,7 @@ public class DataService {
     }
 
     public List<Pollution> getAllPollution() {
-        return pollutionRepository.findAll();
+        return pollutionRepository.getAllBy();
     }
 
     public void uploadCompany(String data) {
