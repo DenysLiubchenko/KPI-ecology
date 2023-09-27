@@ -148,10 +148,10 @@ public class DataService {
     }
 
     public void deleteCompany(List<Long> ids) {
-        companyRepository.deleteAllByIdInBatch(ids);
+        ids.stream().forEach(companyRepository::deleteById);
     }
     public void deletePollutant(List<Long> ids) {
-        pollutantRepository.deleteAllByIdInBatch(ids);
+        ids.stream().forEach(pollutantRepository::deleteById);
     }
     public void deletePollution(List<Long> ids) {
         pollutionRepository.deleteAllByIdInBatch(ids);
