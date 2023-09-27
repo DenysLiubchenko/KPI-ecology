@@ -1,5 +1,7 @@
 package ua.kpi.kpiecologyback.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -33,6 +35,7 @@ public class Pollutant {
     @Column(nullable = false)
     private Integer tlv;
 
-    @OneToMany(mappedBy = "pollutant", cascade = CascadeType.ALL)
+    @JsonIgnore
+    @OneToMany(mappedBy = "pollutant", cascade = CascadeType.REMOVE)
     private List<Pollution> pollutions;
 }

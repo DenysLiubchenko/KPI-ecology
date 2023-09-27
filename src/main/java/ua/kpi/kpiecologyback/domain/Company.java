@@ -1,5 +1,7 @@
 package ua.kpi.kpiecologyback.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -32,6 +34,7 @@ public class Company {
     @Column(nullable = false)
     private String location;
 
-    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL)
+    @JsonIgnore
+    @OneToMany(mappedBy = "company", cascade = CascadeType.REMOVE)
     private List<Pollution> pollutions;
 }
