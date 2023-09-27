@@ -147,16 +147,11 @@ public class DataService {
         pollutionRepository.save(pollution);
     }
 
-    public void deleteCompany(long id) {
-        companyRepository.deleteById(id);
+    public void deleteCompany(List<Long> ids) {
+        companyRepository.deleteAllByIdInBatch(ids);
     }
-
-    public void deletePollutant(long id) {
-        pollutantRepository.deleteById(id);
-    }
-
-    public void deletePollution(long id) {
-        pollutionRepository.deleteById(id);
+    public void deletePollutant(List<Long> ids) {
+        pollutantRepository.deleteAllByIdInBatch(ids);
     }
     public void deletePollution(List<Long> ids) {
         pollutionRepository.deleteAllByIdInBatch(ids);

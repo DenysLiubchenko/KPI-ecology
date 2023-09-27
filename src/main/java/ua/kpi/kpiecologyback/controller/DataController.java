@@ -88,19 +88,14 @@ public class DataController {
     }
 
     @PostMapping("/delete/company")
-    public void deleteCompany (@RequestParam long id) {
-        dataService.deleteCompany(id);
+    public void deleteCompany (@RequestBody List<Long> ids) {
+        dataService.deleteCompany(ids);
     }
 
     @PostMapping("/delete/pollutant")
-    public void deletePollutant (@RequestParam long id) {
-        dataService.deletePollutant(id);
+    public void deletePollutant (@RequestBody List<Long> ids) {
+        dataService.deletePollutant(ids);
     }
-
-//    @PostMapping("/delete/pollution")
-//    public void deletePollution (@RequestParam long id) {
-//        dataService.deletePollution(id);
-//    }
 
     @PostMapping("/delete/pollution")
     public void deletePollution (@RequestBody List<Long> ids) {
