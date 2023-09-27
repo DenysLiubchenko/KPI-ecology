@@ -8,10 +8,14 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.sql.Date;
-import java.time.LocalDate;
-import java.time.Year;
+import java.text.DateFormat;
+import java.time.*;
+
+import static com.fasterxml.jackson.databind.type.LogicalType.DateTime;
 
 @Getter
 @Setter
@@ -35,10 +39,17 @@ public class Pollution {
     private Pollutant pollutant;
 
     @NotNull(message = "Value must not be null")
+    @Min(value = 0, message = "Year must be positive")
     @Column(nullable = false)
     private Double pollutionValue;
 
     @NotNull(message = "Value must not be null")
+    @Min(value = 0, message = "Year must be positive")
     @Column(nullable = false)
     private Integer year;
+
+    public void setYear(Integer year) {
+        if (Year.of(year).isAfter(Year.now())) throw new HttpClientErrorException(HttpStatusCode.valueOf(400));
+        this.year = year;
+    }
 }

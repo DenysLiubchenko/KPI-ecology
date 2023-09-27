@@ -23,7 +23,7 @@ public class Company {
     private Long id;
 
     @NotBlank(message = "Value must not be blank")
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String companyName;
 
     @NotBlank(message = "Value must not be blank")
