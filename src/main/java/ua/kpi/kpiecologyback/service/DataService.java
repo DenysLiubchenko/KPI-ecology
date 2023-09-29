@@ -33,7 +33,7 @@ public class DataService {
         return pollutionRepository.findAll().stream()
                 .map(pollution-> new SummaryDTO(pollution.getCompany().getCompanyName(),
                         pollution.getPollutant().getPollutantName(), pollution.getPollutionValue(),
-                        pollution.getPollutant().getMfr(), pollution.getPollutant().getTlv(), pollution.getYear()))
+                        pollution.getPollutant().getMfr(), pollution.getPollutant().getElv(), pollution.getYear()))
                 .toList();
     }
 
@@ -86,7 +86,7 @@ public class DataService {
             pollutant.setPollutantName(matcher.group().trim());
 
             matcher.find();
-            pollutant.setTlv(Integer.parseInt(matcher.group()));
+            pollutant.setElv(Integer.parseInt(matcher.group()));
 
             matcher.find();
             pollutant.setMfr(Integer.parseInt(matcher.group()));

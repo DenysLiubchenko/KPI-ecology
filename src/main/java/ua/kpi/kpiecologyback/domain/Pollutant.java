@@ -1,7 +1,6 @@
 package ua.kpi.kpiecologyback.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -33,7 +32,7 @@ public class Pollutant {
     @NotNull(message = "Value must not be null")
     @Min(value = 0, message = "Value must be positive")
     @Column(nullable = false)
-    private Integer tlv;
+    private Integer elv;
 
     @JsonIgnore
     @OneToMany(mappedBy = "pollutant", cascade = CascadeType.REMOVE)
