@@ -42,16 +42,19 @@ public class DataController {
     }
 
     @PostMapping("/upload/company")
+    @ResponseStatus(HttpStatus.CREATED)
     public void uploadCompany(@RequestBody Company company) {
         dataService.uploadCompany(company);
     }
 
     @PostMapping("/upload/pollutant")
+    @ResponseStatus(HttpStatus.CREATED)
     public void uploadPollutant(@RequestBody Pollutant pollutant) {
         dataService.uploadPollutant(pollutant);
     }
 
     @PostMapping("/upload/pollution")
+    @ResponseStatus(HttpStatus.CREATED)
     public void uploadPollution(@RequestBody Pollution pollution) {
         dataService.uploadPollution(pollution);
     }
