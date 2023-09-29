@@ -1,6 +1,7 @@
 package ua.kpi.kpiecologyback.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ua.kpi.kpiecologyback.domain.Company;
@@ -23,16 +24,19 @@ public class DataController {
     }
 
     @PostMapping("/upload/csv/company")
+    @ResponseStatus(HttpStatus.CREATED)
     public void uploadCompany(@RequestParam("file") MultipartFile file) throws IOException {
         dataService.uploadCompany(new String(file.getBytes(), "WINDOWS-1251"));
     }
 
     @PostMapping("/upload/csv/pollutant")
+    @ResponseStatus(HttpStatus.CREATED)
     public void uploadPollutant(@RequestParam("file") MultipartFile file) throws IOException {
         dataService.uploadPollutant(new String(file.getBytes(), "WINDOWS-1251"));
     }
 
     @PostMapping("/upload/csv/pollution")
+    @ResponseStatus(HttpStatus.CREATED)
     public void uploadPollution(@RequestParam("file") MultipartFile file) throws IOException {
         dataService.uploadPollution(new String(file.getBytes(), "WINDOWS-1251"));
     }
@@ -73,31 +77,37 @@ public class DataController {
     }
 
     @PostMapping("/update/company")
+    @ResponseStatus(HttpStatus.CREATED)
     public void updateCompany (@RequestBody Company company) {
         dataService.updateCompany(company);
     }
 
     @PostMapping("/update/pollutant")
+    @ResponseStatus(HttpStatus.CREATED)
     public void updatePollutant (@RequestBody Pollutant pollutant) {
         dataService.updatePollutant(pollutant);
     }
 
     @PostMapping("/update/pollution")
+    @ResponseStatus(HttpStatus.CREATED)
     public void updatePollution (@RequestBody Pollution pollution) {
         dataService.updatePollution(pollution);
     }
 
     @PostMapping("/delete/company")
+    @ResponseStatus(HttpStatus.CREATED)
     public void deleteCompany (@RequestBody List<Long> ids) {
         dataService.deleteCompany(ids);
     }
 
     @PostMapping("/delete/pollutant")
+    @ResponseStatus(HttpStatus.CREATED)
     public void deletePollutant (@RequestBody List<Long> ids) {
         dataService.deletePollutant(ids);
     }
 
     @PostMapping("/delete/pollution")
+    @ResponseStatus(HttpStatus.CREATED)
     public void deletePollution (@RequestBody List<Long> ids) {
         dataService.deletePollution(ids);
     }
