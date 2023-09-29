@@ -1,7 +1,9 @@
 package ua.kpi.kpiecologyback.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import ua.kpi.kpiecologyback.domain.Company;
 import ua.kpi.kpiecologyback.domain.Pollutant;
 import ua.kpi.kpiecologyback.domain.Pollution;
@@ -52,7 +54,7 @@ public class DataService {
     public void uploadCompany(String data) {
         Scanner scanner = new Scanner(data);
         scanner.nextLine();
-
+        List<String> companyNames = companyRepository.findAll().stream().map(Company::getCompanyName).toList();
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
             Matcher matcher = pattern.matcher(line);
@@ -67,15 +69,15 @@ public class DataService {
 
             matcher.find();
             company.setLocation(matcher.group());
-
-            companyRepository.save(company);
+            if (!companyNames.contains(company.getCompanyName()))
+                companyRepository.save(company);
         }
     }
 
     public void uploadPollutant(String data) {
         Scanner scanner = new Scanner(data);
         scanner.nextLine();
-
+        List<String> pollutantNames = pollutantRepository.findAll().stream().map(Pollutant::getPollutantName).toList();
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
             Matcher matcher = pattern.matcher(line);
@@ -86,19 +88,22 @@ public class DataService {
             pollutant.setPollutantName(matcher.group().trim());
 
             matcher.find();
-            pollutant.setElv(Integer.parseInt(matcher.group()));
-
-            matcher.find();
             pollutant.setMfr(Integer.parseInt(matcher.group()));
 
-            pollutantRepository.save(pollutant);
+            matcher.find();
+            pollutant.setElv(Integer.parseInt(matcher.group()));
+
+            if (!pollutantNames.contains(pollutant.getPollutantName()))
+                pollutantRepository.save(pollutant);
         }
     }
 
     public void uploadPollution(String data) {
         Scanner scanner = new Scanner(data);
         scanner.nextLine();
-
+        List<Pollution> pollutions = pollutionRepository.getAllBy();
+        List<Company> companies = companyRepository.findAll();
+        List<Pollutant> pollutants = pollutantRepository.findAll();
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
             Matcher matcher = pattern.matcher(line);
@@ -106,11 +111,15 @@ public class DataService {
             Pollution pollution = new Pollution();
 
             matcher.find();
-            Company company = companyRepository.findByCompanyName(matcher.group().trim());
+            String companyName = matcher.group().trim();
+            Company company = companies.stream().filter(company1 -> company1.getCompanyName().equals(companyName))
+                    .findFirst().orElseThrow(()-> new HttpClientErrorException(HttpStatusCode.valueOf(400)));
             pollution.setCompany(company);
 
             matcher.find();
-            Pollutant pollutant = pollutantRepository.findByPollutantName(matcher.group().trim());
+            String pollutantName = matcher.group().trim();
+            Pollutant pollutant = pollutants.stream().filter(pollutant1 -> pollutant1.getPollutantName().equals(pollutantName))
+                    .findFirst().orElseThrow(()-> new HttpClientErrorException(HttpStatusCode.valueOf(400)));
             pollution.setPollutant(pollutant);
 
             matcher.find();
@@ -118,8 +127,12 @@ public class DataService {
 
             matcher.find();
             pollution.setYear(Integer.parseInt(matcher.group()));
-
-            pollutionRepository.save(pollution);
+            if (pollutions.stream()
+                    .noneMatch(pollution1 ->
+                            pollution1.getPollutant().getPollutantName().equals(pollutant.getPollutantName()) &&
+                            pollution1.getCompany().getCompanyName().equals(company.getCompanyName()) &&
+                            pollution1.getYear().equals(pollution.getYear())))
+                pollutionRepository.save(pollution);
         }
     }
 
@@ -148,10 +161,10 @@ public class DataService {
     }
 
     public void deleteCompany(List<Long> ids) {
-        ids.stream().forEach(companyRepository::deleteById);
+        ids.forEach(companyRepository::deleteById);
     }
     public void deletePollutant(List<Long> ids) {
-        ids.stream().forEach(pollutantRepository::deleteById);
+        ids.forEach(pollutantRepository::deleteById);
     }
     public void deletePollution(List<Long> ids) {
         pollutionRepository.deleteAllByIdInBatch(ids);
