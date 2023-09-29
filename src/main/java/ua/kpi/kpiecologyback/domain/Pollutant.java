@@ -22,7 +22,7 @@ public class Pollutant {
     private Long id;
 
     @NotBlank(message = "Value must not be blank")
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String pollutantName;
 
     @NotNull(message = "Value must not be null")
