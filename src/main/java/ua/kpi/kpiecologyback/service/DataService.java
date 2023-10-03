@@ -7,7 +7,6 @@ import org.springframework.web.client.HttpClientErrorException;
 import ua.kpi.kpiecologyback.domain.Company;
 import ua.kpi.kpiecologyback.domain.Pollutant;
 import ua.kpi.kpiecologyback.domain.Pollution;
-import ua.kpi.kpiecologyback.dto.SummaryDTO;
 import ua.kpi.kpiecologyback.repository.CompanyRepository;
 import ua.kpi.kpiecologyback.repository.PollutantRepository;
 import ua.kpi.kpiecologyback.repository.PollutionRepository;
@@ -23,20 +22,12 @@ public class DataService {
     private final CompanyRepository companyRepository;
     private final PollutantRepository pollutantRepository;
     private final PollutionRepository pollutionRepository;
-    private final Pattern pattern = Pattern.compile("(?<=,\").*(?=\",)|[^,\"]+");
+    private final Pattern pattern = Pattern.compile("(?<=,\").*?(?=\",)|[^,\"]+");
     @Autowired
     public DataService(CompanyRepository companyRepository, PollutantRepository pollutantRepository, PollutionRepository pollutionRepository) {
         this.companyRepository = companyRepository;
         this.pollutantRepository = pollutantRepository;
         this.pollutionRepository = pollutionRepository;
-    }
-
-    public List<SummaryDTO> getAllSummary() {
-        return pollutionRepository.findAll().stream()
-                .map(pollution-> new SummaryDTO(pollution.getCompany().getCompanyName(),
-                        pollution.getPollutant().getPollutantName(), pollution.getPollutionValue(),
-                        pollution.getPollutant().getMfr(), pollution.getPollutant().getElv(), pollution.getYear()))
-                .toList();
     }
 
     public List<Company> getAllCompany() {
@@ -48,7 +39,7 @@ public class DataService {
     }
 
     public List<Pollution> getAllPollution() {
-        return pollutionRepository.getAllBy();
+        return pollutionRepository.findAllBy();
     }
 
     public void uploadCompany(String data) {
@@ -93,6 +84,9 @@ public class DataService {
             matcher.find();
             pollutant.setElv(Integer.parseInt(matcher.group()));
 
+            matcher.find();
+            pollutant.setTlv(Double.parseDouble(matcher.group().replace(",", ".")));
+
             if (!pollutantNames.contains(pollutant.getPollutantName()))
                 pollutantRepository.save(pollutant);
         }
@@ -101,7 +95,7 @@ public class DataService {
     public void uploadPollution(String data) {
         Scanner scanner = new Scanner(data);
         scanner.nextLine();
-        List<Pollution> pollutions = pollutionRepository.getAllBy();
+        List<Pollution> pollutions = pollutionRepository.findAllBy();
         List<Company> companies = companyRepository.findAll();
         List<Pollutant> pollutants = pollutantRepository.findAll();
         while (scanner.hasNextLine()) {
@@ -124,6 +118,9 @@ public class DataService {
 
             matcher.find();
             pollution.setPollutionValue(Double.parseDouble(matcher.group().replace(",", ".")));
+
+            matcher.find();
+            pollution.setPollutionConcentration(Double.parseDouble(matcher.group().replace(",", ".")));
 
             matcher.find();
             pollution.setYear(Integer.parseInt(matcher.group()));

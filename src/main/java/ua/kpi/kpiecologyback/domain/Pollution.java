@@ -1,7 +1,6 @@
 package ua.kpi.kpiecologyback.domain;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -11,11 +10,7 @@ import lombok.Setter;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.web.client.HttpClientErrorException;
 
-import java.sql.Date;
-import java.text.DateFormat;
 import java.time.*;
-
-import static com.fasterxml.jackson.databind.type.LogicalType.DateTime;
 
 @Getter
 @Setter
@@ -42,6 +37,11 @@ public class Pollution {
     @Min(value = 0, message = "Year must be positive")
     @Column(nullable = false)
     private Double pollutionValue;
+
+    @NotNull(message = "Value must not be null")
+    @Min(value = 0, message = "Year must be positive")
+    @Column(nullable = false)
+    private Double pollutionConcentration;
 
     @NotNull(message = "Value must not be null")
     @Min(value = 0, message = "Year must be positive")
