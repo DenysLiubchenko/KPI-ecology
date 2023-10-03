@@ -46,6 +46,11 @@ public class Pollution {
     @NotNull(message = "Value must not be null")
     @Min(value = 0, message = "Year must be positive")
     @Column(nullable = false)
+    private Double addLadd;
+
+    @NotNull(message = "Value must not be null")
+    @Min(value = 0, message = "Year must be positive")
+    @Column(nullable = false)
     private Integer year;
 
     public void setYear(Integer year) {

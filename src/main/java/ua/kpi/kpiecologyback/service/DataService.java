@@ -13,6 +13,7 @@ import ua.kpi.kpiecologyback.repository.PollutionRepository;
 
 import java.util.List;
 
+import java.util.Optional;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -22,12 +23,14 @@ public class DataService {
     private final CompanyRepository companyRepository;
     private final PollutantRepository pollutantRepository;
     private final PollutionRepository pollutionRepository;
+    private final CalcService calcService;
     private final Pattern pattern = Pattern.compile("(?<=,\").*?(?=\",)|[^,\"]+");
     @Autowired
-    public DataService(CompanyRepository companyRepository, PollutantRepository pollutantRepository, PollutionRepository pollutionRepository) {
+    public DataService(CompanyRepository companyRepository, PollutantRepository pollutantRepository, PollutionRepository pollutionRepository, CalcService calcService) {
         this.companyRepository = companyRepository;
         this.pollutantRepository = pollutantRepository;
         this.pollutionRepository = pollutionRepository;
+        this.calcService = calcService;
     }
 
     public List<Company> getAllCompany() {
@@ -124,6 +127,9 @@ public class DataService {
 
             matcher.find();
             pollution.setYear(Integer.parseInt(matcher.group()));
+
+            pollution.setAddLadd(calcService.calcAddLadd(pollution.getPollutionConcentration()));
+
             if (pollutions.stream()
                     .noneMatch(pollution1 ->
                             pollution1.getPollutant().getPollutantName().equals(pollutant.getPollutantName()) &&
@@ -142,19 +148,44 @@ public class DataService {
     }
 
     public void uploadPollution(Pollution pollution) {
+        pollution.setAddLadd(calcService.calcAddLadd(pollution.getPollutionConcentration()));
         pollutionRepository.save(pollution);
     }
 
     public void updateCompany(Company company) {
-        companyRepository.save(company);
+        Company currentCompany = companyRepository.findById(company.getId())
+                .orElseThrow(()->new HttpClientErrorException(HttpStatusCode.valueOf(404)));
+        currentCompany.setCompanyName(Optional.ofNullable(company.getCompanyName()).orElse(currentCompany.getCompanyName()));
+        currentCompany.setActivity(Optional.ofNullable(company.getActivity()).orElse(currentCompany.getActivity()));
+        currentCompany.setLocation(Optional.ofNullable(company.getLocation()).orElse(currentCompany.getLocation()));
+        companyRepository.save(currentCompany);
     }
 
     public void updatePollutant(Pollutant pollutant) {
-        pollutantRepository.save(pollutant);
+        Pollutant currentPollutant = pollutantRepository.findById(pollutant.getId())
+                .orElseThrow(()->new HttpClientErrorException(HttpStatusCode.valueOf(404)));
+        currentPollutant.setPollutantName(Optional.ofNullable(pollutant.getPollutantName()).orElse(currentPollutant.getPollutantName()));
+        currentPollutant.setMfr(Optional.ofNullable(pollutant.getMfr()).orElse(currentPollutant.getMfr()));
+        currentPollutant.setElv(Optional.ofNullable(pollutant.getElv()).orElse(currentPollutant.getElv()));
+        currentPollutant.setTlv(Optional.ofNullable(pollutant.getTlv()).orElse(currentPollutant.getTlv()));
+        pollutantRepository.save(currentPollutant);
     }
 
     public void updatePollution(Pollution pollution) {
-        pollutionRepository.save(pollution);
+        Pollution currentPollution = pollutionRepository.findById(pollution.getId())
+                .orElseThrow(()->new HttpClientErrorException(HttpStatusCode.valueOf(404)));
+        if (pollution.getCompany()!=null)
+            currentPollution.setCompany(companyRepository.findById(Optional.ofNullable(pollution.getCompany().getId())
+                    .orElse(currentPollution.getCompany().getId())).get());
+        if (pollution.getPollutant()!=null)
+            currentPollution.setPollutant(pollutantRepository.findById(Optional.ofNullable(pollution.getPollutant().getId())
+                    .orElse(currentPollution.getPollutant().getId())).get());
+        currentPollution.setPollutionValue(Optional.ofNullable(pollution.getPollutionValue())
+                .orElse(currentPollution.getPollutionValue()));
+        currentPollution.setPollutionConcentration(Optional.ofNullable(pollution.getPollutionConcentration())
+                .orElse(currentPollution.getPollutionConcentration()));
+        currentPollution.setAddLadd(calcService.calcAddLadd(currentPollution.getPollutionConcentration()));
+        pollutionRepository.save(currentPollution);
     }
 
     public void deleteCompany(List<Long> ids) {
