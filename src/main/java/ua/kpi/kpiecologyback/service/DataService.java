@@ -17,6 +17,8 @@ import java.util.Optional;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class DataService {
@@ -196,5 +198,40 @@ public class DataService {
     }
     public void deletePollution(List<Long> ids) {
         pollutionRepository.deleteAllByIdInBatch(ids);
+    }
+
+    public String loadCompany () {
+        return "Назва компанії,Вид діяльності,Місцезнаходження\n"+getAllCompany().stream()
+                .map(o -> new String[]{o.getCompanyName(), o.getActivity(), o.getLocation()})
+                .map(this::convertToCSV).collect(Collectors.joining("\n"));
+    }
+
+    public String loadPollutant () {
+        return "Назва забрудника,Величина масової витрати,ГДВ,ГДК\n"+getAllPollutant().stream()
+                .map(o -> new String[]{o.getPollutantName(), String.valueOf(o.getMfr()),
+                        String.valueOf(o.getElv()), String.valueOf(o.getTlv())})
+                .map(this::convertToCSV).collect(Collectors.joining("\n"));
+    }
+
+    public String loadPollution () {
+        return "Компанія,Забрудник,Розмір викидів,Концентрація,Дата,Add\\Ladd\n"+getAllPollution().stream().map(o -> new String[]{o.getCompany().getCompanyName(),
+                        o.getPollutant().getPollutantName(), String.valueOf(o.getPollutionValue()),
+                        String.valueOf(o.getPollutionConcentration()), String.valueOf(o.getYear()),
+                        String.valueOf(o.getAddLadd())})
+                .map(this::convertToCSV).collect(Collectors.joining("\n"));
+    }
+
+    private String convertToCSV(String[] data) {
+        return Stream.of(data).map(this::escapeSpecialCharacters)
+                .collect(Collectors.joining(","));
+    }
+
+    private String escapeSpecialCharacters(String data) {
+        String escapedData = data.replaceAll("\\R", " ");
+        if (data.contains(",") || data.contains("\"") || data.contains("'")) {
+            data = data.replace("\"", "\"\"");
+            escapedData = "\"" + data + "\"";
+        }
+        return escapedData;
     }
 }

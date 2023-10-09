@@ -1,7 +1,10 @@
 package ua.kpi.kpiecologyback.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ua.kpi.kpiecologyback.domain.Company;
@@ -11,6 +14,8 @@ import ua.kpi.kpiecologyback.service.DataService;
 
 import java.io.IOException;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @RestController
@@ -71,6 +76,30 @@ public class DataController {
     @GetMapping("/get/pollution")
     public List<Pollution> getAllPollution () {
         return dataService.getAllPollution();
+    }
+
+    @GetMapping("/get/csv/company")
+    public ResponseEntity<String> getAllCompanyCsv () {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(new MediaType("text", "csv", Charset.forName("windows-1251")));
+        headers.setContentDispositionFormData("attachment", "company.csv");
+        return ResponseEntity.ok().headers(headers).body(dataService.loadCompany());
+    }
+
+    @GetMapping("/get/csv/pollutant")
+    public ResponseEntity<String> getAllPollutantCsv () {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(new MediaType("text", "csv", Charset.forName("windows-1251")));
+        headers.setContentDispositionFormData("attachment", "pollutant.csv");
+        return ResponseEntity.ok().headers(headers).body(dataService.loadPollutant());
+    }
+
+    @GetMapping("/get/csv/pollution")
+    public ResponseEntity<String> getAllPollutionCsv () {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(new MediaType("text", "csv", Charset.forName("windows-1251")));
+        headers.setContentDispositionFormData("attachment", "pollution.csv");
+        return ResponseEntity.ok().headers(headers).body(dataService.loadPollution());
     }
 
     @PostMapping("/update/company")
