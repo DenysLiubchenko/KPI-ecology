@@ -11,10 +11,8 @@ import ua.kpi.kpiecologyback.repository.CompanyRepository;
 import ua.kpi.kpiecologyback.repository.PollutantRepository;
 import ua.kpi.kpiecologyback.repository.PollutionRepository;
 
-import java.util.List;
+import java.util.*;
 
-import java.util.Optional;
-import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -26,7 +24,7 @@ public class DataService {
     private final PollutantRepository pollutantRepository;
     private final PollutionRepository pollutionRepository;
     private final CalcService calcService;
-    private final Pattern pattern = Pattern.compile("(?<=,\").*?(?=\",)|[^,\"]+");
+    private final Pattern pattern = Pattern.compile("\"(.*?)\"|([^,]+)");
     @Autowired
     public DataService(CompanyRepository companyRepository, PollutantRepository pollutantRepository, PollutionRepository pollutionRepository, CalcService calcService) {
         this.companyRepository = companyRepository;
@@ -53,18 +51,15 @@ public class DataService {
         List<String> companyNames = companyRepository.findAll().stream().map(Company::getCompanyName).toList();
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
-            Matcher matcher = pattern.matcher(line);
+            Queue<String> values = csvParser(line);
 
             Company company = new Company();
 
-            matcher.find();
-            company.setCompanyName(matcher.group().trim());
+            company.setCompanyName(Objects.requireNonNull(values.poll()).trim());
 
-            matcher.find();
-            company.setActivity(matcher.group());
+            company.setActivity(Objects.requireNonNull(values.poll()).trim());
 
-            matcher.find();
-            company.setLocation(matcher.group());
+            company.setLocation(Objects.requireNonNull(values.poll()).trim());
             if (!companyNames.contains(company.getCompanyName()))
                 companyRepository.save(company);
         }
@@ -76,21 +71,22 @@ public class DataService {
         List<String> pollutantNames = pollutantRepository.findAll().stream().map(Pollutant::getPollutantName).toList();
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
-            Matcher matcher = pattern.matcher(line);
+            Queue<String> values = csvParser(line);
 
             Pollutant pollutant = new Pollutant();
 
-            matcher.find();
-            pollutant.setPollutantName(matcher.group().trim());
+            pollutant.setPollutantName(Objects.requireNonNull(values.poll()).trim());
 
-            matcher.find();
-            pollutant.setMfr(Integer.parseInt(matcher.group()));
+            pollutant.setMfr(Integer.parseInt(Objects.requireNonNull(values.poll())));
 
-            matcher.find();
-            pollutant.setElv(Integer.parseInt(matcher.group()));
+            pollutant.setElv(Integer.parseInt(Objects.requireNonNull(values.poll())));
 
-            matcher.find();
-            pollutant.setTlv(Double.parseDouble(matcher.group().replace(",", ".")));
+            pollutant.setTlv(Double.parseDouble(Objects.requireNonNull(values.poll()).replace(",", ".")));
+
+            pollutant.setSf(Double.parseDouble(Objects.requireNonNull(values.poll()).replace(",", ".")));
+
+            String replace = Objects.requireNonNull(values.poll()).replace(",", ".");
+            pollutant.setRfc(Double.parseDouble(replace));
 
             if (!pollutantNames.contains(pollutant.getPollutantName()))
                 pollutantRepository.save(pollutant);
@@ -105,32 +101,30 @@ public class DataService {
         List<Pollutant> pollutants = pollutantRepository.findAll();
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
-            Matcher matcher = pattern.matcher(line);
+            Queue<String> values = csvParser(line);
 
             Pollution pollution = new Pollution();
 
-            matcher.find();
-            String companyName = matcher.group().trim();
+            String companyName = Objects.requireNonNull(values.poll()).trim();
             Company company = companies.stream().filter(company1 -> company1.getCompanyName().equals(companyName))
                     .findFirst().orElseThrow(()-> new HttpClientErrorException(HttpStatusCode.valueOf(400)));
             pollution.setCompany(company);
 
-            matcher.find();
-            String pollutantName = matcher.group().trim();
+            String pollutantName = Objects.requireNonNull(values.poll()).trim();
             Pollutant pollutant = pollutants.stream().filter(pollutant1 -> pollutant1.getPollutantName().equals(pollutantName))
                     .findFirst().orElseThrow(()-> new HttpClientErrorException(HttpStatusCode.valueOf(400)));
             pollution.setPollutant(pollutant);
 
-            matcher.find();
-            pollution.setPollutionValue(Double.parseDouble(matcher.group().replace(",", ".")));
+            pollution.setPollutionValue(Double.parseDouble(Objects.requireNonNull(values.poll())
+                    .replace(",", ".")));
 
-            matcher.find();
-            pollution.setPollutionConcentration(Double.parseDouble(matcher.group().replace(",", ".")));
+            pollution.setPollutionConcentration(Double.parseDouble(Objects.requireNonNull(values.poll())
+                    .replace(",", ".")));
 
-            matcher.find();
-            pollution.setYear(Integer.parseInt(matcher.group()));
+            pollution.setYear(Integer.parseInt(Objects.requireNonNull(values.poll())));
 
-            pollution.setAddLadd(calcService.calcAddLadd(pollution.getPollutionConcentration()));
+            pollution.setHq(calcService.calcHq(pollution.getPollutionConcentration(), pollutant.getRfc()));
+            pollution.setCr(calcService.calcCr(pollution.getPollutionConcentration(), pollutant.getSf()));
 
             if (pollutions.stream()
                     .noneMatch(pollution1 ->
@@ -139,6 +133,24 @@ public class DataService {
                             pollution1.getYear().equals(pollution.getYear())))
                 pollutionRepository.save(pollution);
         }
+    }
+
+    private Queue<String> csvParser (String line) {
+        Matcher matcher = pattern.matcher(line);
+
+        Queue<String> output = new LinkedList<>();
+
+        while (matcher.find()) {
+            String group1 = matcher.group(1);
+            String group2 = matcher.group(2);
+
+            if (group1 != null) {
+                output.add(group1);
+            } else {
+                output.add(group2);
+            }
+        }
+        return output;
     }
 
     public void uploadCompany(Company company) {
@@ -150,7 +162,8 @@ public class DataService {
     }
 
     public void uploadPollution(Pollution pollution) {
-        pollution.setAddLadd(calcService.calcAddLadd(pollution.getPollutionConcentration()));
+        pollution.setHq(calcService.calcHq(pollution.getPollutionConcentration(), pollution.getPollutant().getRfc()));
+        pollution.setCr(calcService.calcCr(pollution.getPollutionConcentration(), pollution.getPollutant().getSf()));
         pollutionRepository.save(pollution);
     }
 
@@ -170,6 +183,8 @@ public class DataService {
         currentPollutant.setMfr(Optional.ofNullable(pollutant.getMfr()).orElse(currentPollutant.getMfr()));
         currentPollutant.setElv(Optional.ofNullable(pollutant.getElv()).orElse(currentPollutant.getElv()));
         currentPollutant.setTlv(Optional.ofNullable(pollutant.getTlv()).orElse(currentPollutant.getTlv()));
+        currentPollutant.setSf(pollutant.getSf());
+        currentPollutant.setRfc(pollutant.getRfc());
         pollutantRepository.save(currentPollutant);
     }
 
@@ -186,7 +201,8 @@ public class DataService {
                 .orElse(currentPollution.getPollutionValue()));
         currentPollution.setPollutionConcentration(Optional.ofNullable(pollution.getPollutionConcentration())
                 .orElse(currentPollution.getPollutionConcentration()));
-        currentPollution.setAddLadd(calcService.calcAddLadd(currentPollution.getPollutionConcentration()));
+        pollution.setHq(calcService.calcHq(pollution.getPollutionConcentration(), pollution.getPollutant().getRfc()));
+        pollution.setCr(calcService.calcCr(pollution.getPollutionConcentration(), pollution.getPollutant().getSf()));
         pollutionRepository.save(currentPollution);
     }
 
@@ -209,7 +225,8 @@ public class DataService {
     public String loadPollutant () {
         return "Назва забрудника,Величина масової витрати,ГДВ,ГДК\n"+getAllPollutant().stream()
                 .map(o -> new String[]{o.getPollutantName(), String.valueOf(o.getMfr()),
-                        String.valueOf(o.getElv()), String.valueOf(o.getTlv())})
+                        String.valueOf(o.getElv()), String.valueOf(o.getTlv()),
+                        String.valueOf(o.getSf()),String.valueOf(o.getRfc())})
                 .map(this::convertToCSV).collect(Collectors.joining("\n"));
     }
 
@@ -217,7 +234,7 @@ public class DataService {
         return "Компанія,Забрудник,Розмір викидів,Концентрація,Дата,Add\\Ladd\n"+getAllPollution().stream().map(o -> new String[]{o.getCompany().getCompanyName(),
                         o.getPollutant().getPollutantName(), String.valueOf(o.getPollutionValue()),
                         String.valueOf(o.getPollutionConcentration()), String.valueOf(o.getYear()),
-                        String.valueOf(o.getAddLadd())})
+                        String.valueOf(o.getHq()), String.valueOf(o.getCr())})
                 .map(this::convertToCSV).collect(Collectors.joining("\n"));
     }
 

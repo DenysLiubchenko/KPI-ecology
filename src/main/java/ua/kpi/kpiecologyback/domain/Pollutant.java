@@ -39,6 +39,14 @@ public class Pollutant {
     @Column(nullable = false)
     private Double tlv;
 
+    @Min(value = 0, message = "Value must be positive")
+    @Column()
+    private Double sf = 0.;
+
+    @Min(value = 0, message = "Value must be positive")
+    @Column()
+    private Double rfc = 0.;
+
     @JsonIgnore
     @OneToMany(mappedBy = "pollutant", cascade = CascadeType.REMOVE)
     private List<Pollution> pollutions;
