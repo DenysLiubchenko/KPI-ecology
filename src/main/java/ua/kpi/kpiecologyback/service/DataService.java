@@ -223,7 +223,7 @@ public class DataService {
     }
 
     public String loadPollutant () {
-        return "Назва забрудника,Величина масової витрати,ГДВ,ГДК\n"+getAllPollutant().stream()
+        return "Назва забрудника,Величина масової витрати,ГДВ,ГДК,SF,RfC\n"+getAllPollutant().stream()
                 .map(o -> new String[]{o.getPollutantName(), String.valueOf(o.getMfr()),
                         String.valueOf(o.getElv()), String.valueOf(o.getTlv()),
                         String.valueOf(o.getSf()),String.valueOf(o.getRfc())})
@@ -231,7 +231,7 @@ public class DataService {
     }
 
     public String loadPollution () {
-        return "Компанія,Забрудник,Розмір викидів,Концентрація,Дата,Add\\Ladd\n"+getAllPollution().stream().map(o -> new String[]{o.getCompany().getCompanyName(),
+        return "Компанія,Забрудник,Розмір викидів,Концентрація,Дата,Hq,Cr\n"+getAllPollution().stream().map(o -> new String[]{o.getCompany().getCompanyName(),
                         o.getPollutant().getPollutantName(), String.valueOf(o.getPollutionValue()),
                         String.valueOf(o.getPollutionConcentration()), String.valueOf(o.getYear()),
                         String.valueOf(o.getHq()), String.valueOf(o.getCr())})
