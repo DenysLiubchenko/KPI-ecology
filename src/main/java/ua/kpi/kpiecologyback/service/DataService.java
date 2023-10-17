@@ -125,6 +125,7 @@ public class DataService {
 
             pollution.setHq(calcService.calcHq(pollution.getPollutionConcentration(), pollutant.getRfc()));
             pollution.setCr(calcService.calcCr(pollution.getPollutionConcentration(), pollutant.getSf()));
+            pollution.setPenalty(calcService.calcAirPenalty(pollution.getPollutant().getMfr(), pollution.getPollutionValue(), pollution.getPollutant().getTlv()));
 
             if (pollutions.stream()
                     .noneMatch(pollution1 ->
@@ -203,6 +204,7 @@ public class DataService {
                 .orElse(currentPollution.getPollutionConcentration()));
         pollution.setHq(calcService.calcHq(pollution.getPollutionConcentration(), pollution.getPollutant().getRfc()));
         pollution.setCr(calcService.calcCr(pollution.getPollutionConcentration(), pollution.getPollutant().getSf()));
+        pollution.setPenalty(calcService.calcAirPenalty(pollution.getPollutant().getMfr(), pollution.getPollutionValue(), pollution.getPollutant().getTlv()));
         pollutionRepository.save(currentPollution);
     }
 
@@ -231,10 +233,10 @@ public class DataService {
     }
 
     public String loadPollution () {
-        return "Компанія,Забрудник,Розмір викидів,Концентрація,Дата,Hq,Cr\n"+getAllPollution().stream().map(o -> new String[]{o.getCompany().getCompanyName(),
+        return "Компанія,Забрудник,Розмір викидів,Концентрація,Дата,Hq,Cr,Penalty\n"+getAllPollution().stream().map(o -> new String[]{o.getCompany().getCompanyName(),
                         o.getPollutant().getPollutantName(), String.valueOf(o.getPollutionValue()),
                         String.valueOf(o.getPollutionConcentration()), String.valueOf(o.getYear()),
-                        String.valueOf(o.getHq()), String.valueOf(o.getCr())})
+                        String.valueOf(o.getHq()), String.valueOf(o.getCr()), String.valueOf(o.getPenalty())})
                 .map(this::convertToCSV).collect(Collectors.joining("\n"));
     }
 

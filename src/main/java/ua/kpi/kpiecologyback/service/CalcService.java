@@ -18,4 +18,17 @@ public class CalcService {
     public double calcCr (double ca, double sf) {
         return calcAddLadd(ca)*sf;
     }
+
+    public double calcAirPenalty (double mfr, double pv, double tlv) {
+        final double defaultMinWage = 6700, defaultKt = 1.55*1.25, defaultKzi = 1, t = 30744;
+        if (pv - mfr <= 0) return 0;
+        else if (tlv > 1)
+            return getPollutionMass(mfr*0.00028, pv*0.00028, t) * defaultMinWage * (10/tlv) * defaultKt * defaultKzi;
+        else
+            return getPollutionMass(mfr*0.00028, pv*0.00028, t) * defaultMinWage * (1/tlv) * defaultKt * defaultKzi;
+    }
+
+    private double getPollutionMass(double mfr, double pv, double t) {
+        return 3.6 * Math.pow(10, -3) * (pv - mfr) * t;
+    }
 }
