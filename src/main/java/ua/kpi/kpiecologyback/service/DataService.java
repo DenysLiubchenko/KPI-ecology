@@ -6,9 +6,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import ua.kpi.kpiecologyback.domain.Company;
 import ua.kpi.kpiecologyback.domain.Pollutant;
+import ua.kpi.kpiecologyback.domain.PollutantType;
 import ua.kpi.kpiecologyback.domain.Pollution;
 import ua.kpi.kpiecologyback.repository.CompanyRepository;
 import ua.kpi.kpiecologyback.repository.PollutantRepository;
+import ua.kpi.kpiecologyback.repository.PollutantTypeRepository;
 import ua.kpi.kpiecologyback.repository.PollutionRepository;
 
 import java.util.*;
@@ -22,13 +24,15 @@ import java.util.stream.Stream;
 public class DataService {
     private final CompanyRepository companyRepository;
     private final PollutantRepository pollutantRepository;
+    private final PollutantTypeRepository pollutantTypeRepository;
     private final PollutionRepository pollutionRepository;
     private final CalcService calcService;
     private final Pattern pattern = Pattern.compile("\"(.*?)\"|([^,]+)");
     @Autowired
-    public DataService(CompanyRepository companyRepository, PollutantRepository pollutantRepository, PollutionRepository pollutionRepository, CalcService calcService) {
+    public DataService(CompanyRepository companyRepository, PollutantRepository pollutantRepository, PollutantTypeRepository pollutantTypeRepository, PollutionRepository pollutionRepository, CalcService calcService) {
         this.companyRepository = companyRepository;
         this.pollutantRepository = pollutantRepository;
+        this.pollutantTypeRepository = pollutantTypeRepository;
         this.pollutionRepository = pollutionRepository;
         this.calcService = calcService;
     }
@@ -39,6 +43,9 @@ public class DataService {
 
     public List<Pollutant> getAllPollutant() {
         return pollutantRepository.findAll();
+    }
+    public List<PollutantType> getAllPollutantType() {
+        return pollutantTypeRepository.findAll();
     }
 
     public List<Pollution> getAllPollution() {
@@ -68,7 +75,8 @@ public class DataService {
     public void uploadPollutant(String data) {
         Scanner scanner = new Scanner(data);
         scanner.nextLine();
-        List<String> pollutantNames = pollutantRepository.findAll().stream().map(Pollutant::getPollutantName).toList();
+        List<Pollutant> pollutants = pollutantRepository.findAll();
+        List<PollutantType> pollutantTypes = pollutantTypeRepository.findAll();
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
             Queue<String> values = csvParser(line);
@@ -88,7 +96,12 @@ public class DataService {
             String replace = Objects.requireNonNull(values.poll()).replace(",", ".");
             pollutant.setRfc(Double.parseDouble(replace));
 
-            if (!pollutantNames.contains(pollutant.getPollutantName()))
+            pollutant.setPollutantType(pollutantTypeRepository.findById(Long.parseLong(Objects.requireNonNull(values.poll())))
+                    .orElseThrow(()-> new HttpClientErrorException(HttpStatusCode.valueOf(400))));
+
+            pollutant.setTaxRate(Double.parseDouble(Objects.requireNonNull(values.poll()).replace(",", ".")));
+
+            if (!pollutants.contains(pollutant))
                 pollutantRepository.save(pollutant);
         }
     }
@@ -98,7 +111,6 @@ public class DataService {
         scanner.nextLine();
         List<Pollution> pollutions = pollutionRepository.findAllBy();
         List<Company> companies = companyRepository.findAll();
-        List<Pollutant> pollutants = pollutantRepository.findAll();
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
             Queue<String> values = csvParser(line);
@@ -110,9 +122,8 @@ public class DataService {
                     .findFirst().orElseThrow(()-> new HttpClientErrorException(HttpStatusCode.valueOf(400)));
             pollution.setCompany(company);
 
-            String pollutantName = Objects.requireNonNull(values.poll()).trim();
-            Pollutant pollutant = pollutants.stream().filter(pollutant1 -> pollutant1.getPollutantName().equals(pollutantName))
-                    .findFirst().orElseThrow(()-> new HttpClientErrorException(HttpStatusCode.valueOf(400)));
+            Pollutant pollutant = pollutantRepository.findById(Long.parseLong(Objects.requireNonNull(values.poll())))
+                    .orElseThrow(()-> new HttpClientErrorException(HttpStatusCode.valueOf(400)));
             pollution.setPollutant(pollutant);
 
             pollution.setPollutionValue(Double.parseDouble(Objects.requireNonNull(values.poll())
@@ -126,7 +137,7 @@ public class DataService {
             pollution.setHq(calcService.calcHq(pollution.getPollutionConcentration(), pollutant.getRfc()));
             pollution.setCr(calcService.calcCr(pollution.getPollutionConcentration(), pollutant.getSf()));
             pollution.setPenalty(calcService.calcAirPenalty(pollution.getPollutant().getMfr(), pollution.getPollutionValue(), pollution.getPollutant().getTlv()));
-
+            pollution.setTax(calcService.calcTax(pollution.getPollutant().getMfr(), pollution.getPollutant().getTaxRate()));
             if (pollutions.stream()
                     .noneMatch(pollution1 ->
                             pollution1.getPollutant().getPollutantName().equals(pollutant.getPollutantName()) &&
@@ -161,10 +172,14 @@ public class DataService {
     public void uploadPollutant(Pollutant pollutant) {
         pollutantRepository.save(pollutant);
     }
+    public void uploadPollutantType(PollutantType pollutantType) {
+        pollutantTypeRepository.save(pollutantType);
+    }
 
     public void uploadPollution(Pollution pollution) {
         pollution.setHq(calcService.calcHq(pollution.getPollutionConcentration(), pollution.getPollutant().getRfc()));
         pollution.setCr(calcService.calcCr(pollution.getPollutionConcentration(), pollution.getPollutant().getSf()));
+        pollution.setTax(calcService.calcTax(pollution.getPollutant().getMfr(), pollution.getPollutant().getTaxRate()));
         pollutionRepository.save(pollution);
     }
 
@@ -186,7 +201,18 @@ public class DataService {
         currentPollutant.setTlv(Optional.ofNullable(pollutant.getTlv()).orElse(currentPollutant.getTlv()));
         currentPollutant.setSf(pollutant.getSf());
         currentPollutant.setRfc(pollutant.getRfc());
+        if (pollutant.getPollutantType()!=null)
+            currentPollutant.setPollutantType(pollutantTypeRepository.findById(Optional.ofNullable(pollutant.getPollutantType().getId())
+                    .orElse(currentPollutant.getPollutantType().getId())).get());
+        currentPollutant.setTaxRate(pollutant.getTaxRate());
         pollutantRepository.save(currentPollutant);
+    }
+
+    public void updatePollutantType(PollutantType pollutantType) {
+        PollutantType currentPollutantType = pollutantTypeRepository.findById(pollutantType.getId())
+                .orElseThrow(()->new HttpClientErrorException(HttpStatusCode.valueOf(404)));
+        currentPollutantType.setPollutantTypeName(Optional.ofNullable(pollutantType.getPollutantTypeName()).orElse(currentPollutantType.getPollutantTypeName()));
+        pollutantTypeRepository.save(currentPollutantType);
     }
 
     public void updatePollution(Pollution pollution) {
@@ -204,7 +230,8 @@ public class DataService {
                 .orElse(currentPollution.getPollutionConcentration()));
         pollution.setHq(calcService.calcHq(pollution.getPollutionConcentration(), pollution.getPollutant().getRfc()));
         pollution.setCr(calcService.calcCr(pollution.getPollutionConcentration(), pollution.getPollutant().getSf()));
-        pollution.setPenalty(calcService.calcAirPenalty(pollution.getPollutant().getMfr(), pollution.getPollutionValue(), pollution.getPollutant().getTlv()));
+        pollution.setPenalty(calcService.calcAirPenalty(pollution.getPollutionValue(), pollution.getPollutionValue(), pollution.getPollutant().getTlv()));
+        pollution.setTax(calcService.calcTax(pollution.getPollutant().getMfr(), pollution.getPollutant().getTaxRate()));
         pollutionRepository.save(currentPollution);
     }
 
@@ -213,6 +240,9 @@ public class DataService {
     }
     public void deletePollutant(List<Long> ids) {
         ids.forEach(pollutantRepository::deleteById);
+    }
+    public void deletePollutantType(List<Long> ids) {
+        ids.forEach(pollutantTypeRepository::deleteById);
     }
     public void deletePollution(List<Long> ids) {
         pollutionRepository.deleteAllByIdInBatch(ids);
@@ -225,18 +255,22 @@ public class DataService {
     }
 
     public String loadPollutant () {
-        return "Назва забрудника,Величина масової витрати,ГДВ,ГДК,SF,RfC\n"+getAllPollutant().stream()
+        return "Назва забрудника,Величина масової витрати,ГДВ,ГДК,SF,RfC,Вид забруднення,Ставка податку\n"+getAllPollutant().stream()
                 .map(o -> new String[]{o.getPollutantName(), String.valueOf(o.getMfr()),
                         String.valueOf(o.getElv()), String.valueOf(o.getTlv()),
-                        String.valueOf(o.getSf()),String.valueOf(o.getRfc())})
+                        String.valueOf(o.getSf()),String.valueOf(o.getRfc()),
+                        String.valueOf(o.getPollutantType().getPollutantTypeName()),
+                        String.valueOf(o.getTaxRate())})
                 .map(this::convertToCSV).collect(Collectors.joining("\n"));
     }
 
     public String loadPollution () {
-        return "Компанія,Забрудник,Розмір викидів,Концентрація,Дата,Hq,Cr,Штраф\n"+getAllPollution().stream().map(o -> new String[]{o.getCompany().getCompanyName(),
-                        o.getPollutant().getPollutantName(), String.valueOf(o.getPollutionValue()),
+        return "Компанія,Забрудник,Вид забруднення,Розмір викидів,Концентрація,Дата,Hq,Cr,Штраф,Податок\n"+getAllPollution().stream()
+                .map(o -> new String[]{o.getCompany().getCompanyName(), o.getPollutant().getPollutantName(),
+                        String.valueOf(o.getPollutant().getPollutantType().getPollutantTypeName()),String.valueOf(o.getPollutionValue()),
                         String.valueOf(o.getPollutionConcentration()), String.valueOf(o.getYear()),
-                        String.valueOf(o.getHq()), String.valueOf(o.getCr()), String.valueOf(o.getPenalty())})
+                        String.valueOf(o.getHq()), String.valueOf(o.getCr()), String.valueOf(o.getPenalty()),
+                        String.valueOf(o.getTax())})
                 .map(this::convertToCSV).collect(Collectors.joining("\n"));
     }
 

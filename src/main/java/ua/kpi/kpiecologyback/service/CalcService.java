@@ -31,4 +31,8 @@ public class CalcService {
     private double getPollutionMass(double mfr, double pv, double t) {
         return 3.6 * Math.pow(10, -3) * (pv - mfr) * t;
     }
+
+    public double calcTax(double pollutionValue, double taxRate) {
+        return pollutionValue*0.00028*taxRate;
+    }
 }

@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.util.List;
+import java.util.Objects;
 
 @Getter
 @Setter
@@ -21,7 +22,7 @@ public class Pollutant {
     private Long id;
 
     @NotBlank(message = "Value must not be blank")
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String pollutantName;
 
     @NotNull(message = "Value must not be null")
@@ -47,7 +48,30 @@ public class Pollutant {
     @Column()
     private Double rfc = 0.;
 
+    @NotNull(message = "Value must not be null")
+    @ManyToOne
+    @JoinColumn(name = "pollutant_type_id", nullable = false)
+    private PollutantType pollutantType;
+
+    @NotNull(message = "Value must not be null")
+    @Min(value = 0, message = "Value must be positive")
+    @Column(nullable = false)
+    private Double taxRate;
+
     @JsonIgnore
     @OneToMany(mappedBy = "pollutant", cascade = CascadeType.REMOVE)
     private List<Pollution> pollutions;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Pollutant pollutant = (Pollutant) o;
+        return Objects.equals(pollutantName, pollutant.pollutantName) && Objects.equals(pollutantType, pollutant.pollutantType);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(pollutantName, pollutantType);
+    }
 }

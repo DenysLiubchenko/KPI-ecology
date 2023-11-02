@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ua.kpi.kpiecologyback.domain.Company;
 import ua.kpi.kpiecologyback.domain.Pollutant;
+import ua.kpi.kpiecologyback.domain.PollutantType;
 import ua.kpi.kpiecologyback.domain.Pollution;
 import ua.kpi.kpiecologyback.service.DataService;
 
@@ -57,6 +58,12 @@ public class DataController {
         dataService.uploadPollutant(pollutant);
     }
 
+    @PostMapping("/upload/pollutantType")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void uploadPollutantType(@RequestBody PollutantType pollutantType) {
+        dataService.uploadPollutantType(pollutantType);
+    }
+
     @PostMapping("/upload/pollution")
     @ResponseStatus(HttpStatus.CREATED)
     public void uploadPollution(@RequestBody Pollution pollution) {
@@ -71,6 +78,11 @@ public class DataController {
     @GetMapping("/get/pollutant")
     public List<Pollutant> getAllPollutant () {
         return dataService.getAllPollutant();
+    }
+
+    @GetMapping("/get/pollutantType")
+    public List<PollutantType> getAllPollutantType () {
+        return dataService.getAllPollutantType();
     }
 
     @GetMapping("/get/pollution")
@@ -114,6 +126,12 @@ public class DataController {
         dataService.updatePollutant(pollutant);
     }
 
+    @PostMapping("/update/pollutantType")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void updatePollutantType(@RequestBody PollutantType pollutantType) {
+        dataService.updatePollutantType(pollutantType);
+    }
+
     @PostMapping("/update/pollution")
     @ResponseStatus(HttpStatus.CREATED)
     public void updatePollution (@RequestBody Pollution pollution) {
@@ -130,6 +148,12 @@ public class DataController {
     @ResponseStatus(HttpStatus.CREATED)
     public void deletePollutant (@RequestBody List<Long> ids) {
         dataService.deletePollutant(ids);
+    }
+
+    @PostMapping("/delete/pollutantType")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void deletePollutantType (@RequestBody List<Long> ids) {
+        dataService.deletePollutantType(ids);
     }
 
     @PostMapping("/delete/pollution")
