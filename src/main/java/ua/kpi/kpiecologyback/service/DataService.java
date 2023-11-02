@@ -228,10 +228,10 @@ public class DataService {
                 .orElse(currentPollution.getPollutionValue()));
         currentPollution.setPollutionConcentration(Optional.ofNullable(pollution.getPollutionConcentration())
                 .orElse(currentPollution.getPollutionConcentration()));
-        pollution.setHq(calcService.calcHq(pollution.getPollutionConcentration(), pollution.getPollutant().getRfc()));
-        pollution.setCr(calcService.calcCr(pollution.getPollutionConcentration(), pollution.getPollutant().getSf()));
-        pollution.setPenalty(calcService.calcAirPenalty(pollution.getPollutionValue(), pollution.getPollutionValue(), pollution.getPollutant().getTlv()));
-        pollution.setTax(calcService.calcTax(pollution.getPollutant().getMfr(), pollution.getPollutant().getTaxRate()));
+        currentPollution.setHq(calcService.calcHq(currentPollution.getPollutionConcentration(), currentPollution.getPollutant().getRfc()));
+        currentPollution.setCr(calcService.calcCr(currentPollution.getPollutionConcentration(), currentPollution.getPollutant().getSf()));
+        currentPollution.setPenalty(calcService.calcAirPenalty(currentPollution.getPollutionValue(), currentPollution.getPollutionValue(), currentPollution.getPollutant().getTlv()));
+        currentPollution.setTax(calcService.calcTax(currentPollution.getPollutant().getMfr(), currentPollution.getPollutant().getTaxRate()));
         pollutionRepository.save(currentPollution);
     }
 
