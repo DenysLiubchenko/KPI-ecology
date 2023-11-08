@@ -183,6 +183,7 @@ public class DataService {
                 .orElseThrow(()-> new HttpClientErrorException(HttpStatusCode.valueOf(400))));
         pollution.setHq(calcService.calcHq(pollution.getPollutionConcentration(), pollution.getPollutant().getRfc()));
         pollution.setCr(calcService.calcCr(pollution.getPollutionConcentration(), pollution.getPollutant().getSf()));
+        pollution.setPenalty(calcService.calcAirPenalty(pollution.getPollutionValue(), pollution.getPollutionValue(), pollution.getPollutant().getTlv()));
         pollution.setTax(calcService.calcTax(pollution.getPollutant().getMfr(), pollution.getPollutant().getTaxRate()));
         pollutionRepository.save(pollution);
     }
