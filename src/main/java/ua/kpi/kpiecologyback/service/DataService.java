@@ -177,13 +177,13 @@ public class DataService {
     }
 
     public void uploadPollution(Pollution pollution) {
-        pollution.setHq(calcService.calcHq(pollution.getPollutionConcentration(), pollution.getPollutant().getRfc()));
-        pollution.setCr(calcService.calcCr(pollution.getPollutionConcentration(), pollution.getPollutant().getSf()));
-        pollution.setTax(calcService.calcTax(pollution.getPollutant().getMfr(), pollution.getPollutant().getTaxRate()));
         pollution.setPollutant(pollutantRepository.findById(pollution.getPollutant().getId())
                 .orElseThrow(()-> new HttpClientErrorException(HttpStatusCode.valueOf(400))));
         pollution.setCompany(companyRepository.findById(pollution.getCompany().getId())
                 .orElseThrow(()-> new HttpClientErrorException(HttpStatusCode.valueOf(400))));
+        pollution.setHq(calcService.calcHq(pollution.getPollutionConcentration(), pollution.getPollutant().getRfc()));
+        pollution.setCr(calcService.calcCr(pollution.getPollutionConcentration(), pollution.getPollutant().getSf()));
+        pollution.setTax(calcService.calcTax(pollution.getPollutant().getMfr(), pollution.getPollutant().getTaxRate()));
         pollutionRepository.save(pollution);
     }
 
