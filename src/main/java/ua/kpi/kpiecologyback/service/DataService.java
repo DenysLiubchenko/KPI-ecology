@@ -4,14 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
-import ua.kpi.kpiecologyback.domain.Company;
-import ua.kpi.kpiecologyback.domain.Pollutant;
-import ua.kpi.kpiecologyback.domain.PollutantType;
-import ua.kpi.kpiecologyback.domain.Pollution;
-import ua.kpi.kpiecologyback.repository.CompanyRepository;
-import ua.kpi.kpiecologyback.repository.PollutantRepository;
-import ua.kpi.kpiecologyback.repository.PollutantTypeRepository;
-import ua.kpi.kpiecologyback.repository.PollutionRepository;
+import ua.kpi.kpiecologyback.domain.*;
+import ua.kpi.kpiecologyback.repository.*;
 
 import java.util.*;
 
@@ -26,14 +20,16 @@ public class DataService {
     private final PollutantRepository pollutantRepository;
     private final PollutantTypeRepository pollutantTypeRepository;
     private final PollutionRepository pollutionRepository;
+    private final EmergencyRepository emergencyRepository;
     private final CalcService calcService;
     private final Pattern pattern = Pattern.compile("\"(.*?)\"|([^,]+)");
     @Autowired
-    public DataService(CompanyRepository companyRepository, PollutantRepository pollutantRepository, PollutantTypeRepository pollutantTypeRepository, PollutionRepository pollutionRepository, CalcService calcService) {
+    public DataService(CompanyRepository companyRepository, PollutantRepository pollutantRepository, PollutantTypeRepository pollutantTypeRepository, PollutionRepository pollutionRepository, EmergencyRepository emergencyRepository, CalcService calcService) {
         this.companyRepository = companyRepository;
         this.pollutantRepository = pollutantRepository;
         this.pollutantTypeRepository = pollutantTypeRepository;
         this.pollutionRepository = pollutionRepository;
+        this.emergencyRepository = emergencyRepository;
         this.calcService = calcService;
     }
 
@@ -52,6 +48,9 @@ public class DataService {
         return pollutionRepository.findAllBy();
     }
 
+    public List<Emergency> getAllEmergency() {
+        return emergencyRepository.findAll();
+    }
     public void uploadCompany(String data) {
         Scanner scanner = new Scanner(data);
         scanner.nextLine();
@@ -188,6 +187,15 @@ public class DataService {
         pollutionRepository.save(pollution);
     }
 
+    public void uploadEmergency (Emergency emergency) {
+        emergency.setPollutant(pollutantRepository.findById(emergency.getPollutant().getId())
+                .orElseThrow(()-> new HttpClientErrorException(HttpStatusCode.valueOf(400))));
+        emergency.setCompany(companyRepository.findById(emergency.getCompany().getId())
+                .orElseThrow(()-> new HttpClientErrorException(HttpStatusCode.valueOf(400))));
+        calcService.calcEmergencyLoses(emergency);
+        emergencyRepository.save(emergency);
+    }
+
     public void updateCompany(Company company) {
         Company currentCompany = companyRepository.findById(company.getId())
                 .orElseThrow(()->new HttpClientErrorException(HttpStatusCode.valueOf(404)));
@@ -240,6 +248,25 @@ public class DataService {
         pollutionRepository.save(currentPollution);
     }
 
+    public void updateEmergency (Emergency emergency) {
+        Emergency currentEmergency = emergencyRepository.findById(emergency.getId())
+                .orElseThrow(()->new HttpClientErrorException(HttpStatusCode.valueOf(404)));
+        if (emergency.getCompany()!=null)
+            currentEmergency.setCompany(companyRepository.findById(Optional.ofNullable(emergency.getCompany().getId())
+                    .orElse(currentEmergency.getCompany().getId())).get());
+        if (emergency.getPollutant()!=null)
+            currentEmergency.setPollutant(pollutantRepository.findById(Optional.ofNullable(emergency.getPollutant().getId())
+                    .orElse(currentEmergency.getPollutant().getId())).get());
+        currentEmergency.setPeopleMinorInjury(Optional.ofNullable(emergency.getPeopleMinorInjury()).orElse(currentEmergency.getPeopleMinorInjury()));
+        currentEmergency.setPeopleMinorInjury(Optional.ofNullable(emergency.getPeopleSeriousInjury()).orElse(currentEmergency.getPeopleSeriousInjury()));
+        currentEmergency.setPeopleDisability(Optional.ofNullable(emergency.getPeopleDisability()).orElse(currentEmergency.getPeopleDisability()));
+        currentEmergency.setPeopleDead(Optional.ofNullable(emergency.getPeopleDead()).orElse(currentEmergency.getPeopleDead()));
+        currentEmergency.setPollutionValue(Optional.ofNullable(emergency.getPollutionValue()).orElse(currentEmergency.getPollutionValue()));
+        currentEmergency.setPollutionConcentration(Optional.ofNullable(emergency.getPollutionConcentration()).orElse(currentEmergency.getPollutionConcentration()));
+        calcService.calcEmergencyLoses(currentEmergency);
+        emergencyRepository.save(currentEmergency);
+    }
+
     public void deleteCompany(List<Long> ids) {
         ids.forEach(companyRepository::deleteById);
     }
@@ -252,6 +279,10 @@ public class DataService {
     public void deletePollution(List<Long> ids) {
         pollutionRepository.deleteAllByIdInBatch(ids);
     }
+    public void deleteEmergency(List<Long> ids) {
+        emergencyRepository.deleteAllByIdInBatch(ids);
+    }
+
 
     public String loadCompany () {
         return "Назва компанії,Вид діяльності,Місцезнаходження\n"+getAllCompany().stream()

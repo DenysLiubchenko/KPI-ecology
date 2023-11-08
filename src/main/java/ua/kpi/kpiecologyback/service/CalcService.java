@@ -1,6 +1,9 @@
 package ua.kpi.kpiecologyback.service;
 
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import ua.kpi.kpiecologyback.domain.Emergency;
 
 @Service
 public class CalcService {
@@ -34,5 +37,30 @@ public class CalcService {
 
     public double calcTax(double pollutionValue, double taxRate) {
         return pollutionValue*0.00028*taxRate;
+    }
+
+    public double calcEmergencyPeopleLoss (Emergency emergency) {
+        return 0.28*emergency.getPeopleMinorInjury()+6.5*emergency.getPeopleSeriousInjury()+37*emergency.getPeopleDisability()+47*emergency.getPeopleDead();
+    }
+
+    public double calcEmergencyPollutionAirLoss (Emergency emergency) {
+        return emergency.getPollutionValue()*emergency.getPollutant().getTaxRate()
+                *(1/emergency.getPollutant().getTlv())*1.55*1.25
+                *(emergency.getPollutionConcentration()/emergency.getPollutant().getTlv());
+    }
+
+    public double calcEmergencyPollutionWaterLoss (Emergency emergency) {
+        return emergency.getPollutionValue()*0.003*(1/emergency.getPollutant().getTlv())*17*1;
+    }
+
+    public void calcEmergencyLoses (Emergency emergency) {
+        if (emergency.getPollutant().getPollutantType().getId() == 1) {
+            emergency.setPollutionLoss(calcEmergencyPollutionAirLoss(emergency));
+        }else if (emergency.getPollutant().getPollutantType().getId() == 2) {
+            emergency.setPollutionLoss(calcEmergencyPollutionWaterLoss(emergency));
+        } else {
+            emergency.setPollutionLoss(0d);
+        }
+        emergency.setPeopleLoss(calcEmergencyPeopleLoss(emergency));
     }
 }

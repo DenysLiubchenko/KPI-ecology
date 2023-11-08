@@ -7,10 +7,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import ua.kpi.kpiecologyback.domain.Company;
-import ua.kpi.kpiecologyback.domain.Pollutant;
-import ua.kpi.kpiecologyback.domain.PollutantType;
-import ua.kpi.kpiecologyback.domain.Pollution;
+import ua.kpi.kpiecologyback.domain.*;
 import ua.kpi.kpiecologyback.service.DataService;
 
 import java.io.IOException;
@@ -70,6 +67,12 @@ public class DataController {
         dataService.uploadPollution(pollution);
     }
 
+    @PostMapping("/upload/emergency")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void uploadEmergency(@RequestBody Emergency emergency) {
+        dataService.uploadEmergency(emergency);
+    }
+
     @GetMapping("/get/company")
     public List<Company> getAllCompany () {
         return dataService.getAllCompany();
@@ -88,6 +91,11 @@ public class DataController {
     @GetMapping("/get/pollution")
     public List<Pollution> getAllPollution () {
         return dataService.getAllPollution();
+    }
+
+    @GetMapping("/get/emergency")
+    public List<Emergency> getAllEmergency () {
+        return dataService.getAllEmergency();
     }
 
     @GetMapping("/get/csv/company")
@@ -138,6 +146,12 @@ public class DataController {
         dataService.updatePollution(pollution);
     }
 
+    @PostMapping("/update/emergency")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void updateEmergency (@RequestBody Emergency emergency) {
+        dataService.updateEmergency(emergency);
+    }
+
     @PostMapping("/delete/company")
     @ResponseStatus(HttpStatus.CREATED)
     public void deleteCompany (@RequestBody List<Long> ids) {
@@ -162,4 +176,9 @@ public class DataController {
         dataService.deletePollution(ids);
     }
 
+    @PostMapping("/delete/emergency")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void deleteEmergency (@RequestBody List<Long> ids) {
+        dataService.deleteEmergency(ids);
+    }
 }
