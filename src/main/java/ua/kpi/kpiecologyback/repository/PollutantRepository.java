@@ -6,5 +6,4 @@ import ua.kpi.kpiecologyback.domain.Company;
 import ua.kpi.kpiecologyback.domain.Pollutant;
 
 public interface PollutantRepository extends JpaRepository<Pollutant, Long> {
-    public Pollutant findByPollutantName (String pollutantName);
 }
