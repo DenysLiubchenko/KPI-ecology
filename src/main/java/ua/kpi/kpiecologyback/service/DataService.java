@@ -51,10 +51,11 @@ public class DataService {
     public List<Emergency> getAllEmergency() {
         return emergencyRepository.findAll();
     }
-    public void uploadCompany(String data) {
+    public List<Company> uploadCompany(String data) {
         Scanner scanner = new Scanner(data);
         scanner.nextLine();
         List<String> companyNames = companyRepository.findAll().stream().map(Company::getCompanyName).toList();
+        List<Company> companyList = new ArrayList<>();
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
             Queue<String> values = csvParser(line);
@@ -66,16 +67,19 @@ public class DataService {
             company.setActivity(Objects.requireNonNull(values.poll()).trim());
 
             company.setLocation(Objects.requireNonNull(values.poll()).trim());
-            if (!companyNames.contains(company.getCompanyName()))
+            if (!companyNames.contains(company.getCompanyName())) {
                 companyRepository.save(company);
+                companyList.add(company);
+            }
         }
+        return companyList;
     }
 
-    public void uploadPollutant(String data) {
+    public List<Pollutant> uploadPollutant(String data) {
         Scanner scanner = new Scanner(data);
         scanner.nextLine();
         List<Pollutant> pollutants = pollutantRepository.findAll();
-        List<PollutantType> pollutantTypes = pollutantTypeRepository.findAll();
+        List<Pollutant> pollutantList = new ArrayList<>();
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
             Queue<String> values = csvParser(line);
@@ -100,16 +104,20 @@ public class DataService {
 
             pollutant.setTaxRate(Double.parseDouble(Objects.requireNonNull(values.poll()).replace(",", ".")));
 
-            if (!pollutants.contains(pollutant))
+            if (!pollutants.contains(pollutant)) {
                 pollutantRepository.save(pollutant);
+                pollutantList.add(pollutant);
+            }
         }
+        return pollutantList;
     }
 
-    public void uploadPollution(String data) {
+    public List<Pollution> uploadPollution(String data) {
         Scanner scanner = new Scanner(data);
         scanner.nextLine();
         List<Pollution> pollutions = pollutionRepository.findAllBy();
         List<Company> companies = companyRepository.findAll();
+        List<Pollution> pollutionList = new ArrayList<>();
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
             Queue<String> values = csvParser(line);
@@ -141,9 +149,12 @@ public class DataService {
                     .noneMatch(pollution1 ->
                             pollution1.getPollutant().getPollutantName().equals(pollutant.getPollutantName()) &&
                             pollution1.getCompany().getCompanyName().equals(company.getCompanyName()) &&
-                            pollution1.getYear().equals(pollution.getYear())))
+                            pollution1.getYear().equals(pollution.getYear()))) {
                 pollutionRepository.save(pollution);
+                pollutionList.add(pollution);
+            }
         }
+        return pollutionList;
     }
 
     private Queue<String> csvParser (String line) {
@@ -164,18 +175,18 @@ public class DataService {
         return output;
     }
 
-    public void uploadCompany(Company company) {
-        companyRepository.save(company);
+    public Company uploadCompany(Company company) {
+        return companyRepository.save(company);
     }
 
-    public void uploadPollutant(Pollutant pollutant) {
-        pollutantRepository.save(pollutant);
+    public Pollutant uploadPollutant(Pollutant pollutant) {
+        return pollutantRepository.save(pollutant);
     }
-    public void uploadPollutantType(PollutantType pollutantType) {
-        pollutantTypeRepository.save(pollutantType);
+    public PollutantType uploadPollutantType(PollutantType pollutantType) {
+        return pollutantTypeRepository.save(pollutantType);
     }
 
-    public void uploadPollution(Pollution pollution) {
+    public Pollution uploadPollution(Pollution pollution) {
         pollution.setPollutant(pollutantRepository.findById(pollution.getPollutant().getId())
                 .orElseThrow(()-> new HttpClientErrorException(HttpStatusCode.valueOf(400))));
         pollution.setCompany(companyRepository.findById(pollution.getCompany().getId())
@@ -184,28 +195,28 @@ public class DataService {
         pollution.setCr(calcService.calcCr(pollution.getPollutionConcentration(), pollution.getPollutant().getSf()));
         pollution.setPenalty(calcService.calcAirPenalty(pollution.getPollutionValue(), pollution.getPollutionValue(), pollution.getPollutant().getTlv()));
         pollution.setTax(calcService.calcTax(pollution.getPollutant().getMfr(), pollution.getPollutant().getTaxRate()));
-        pollutionRepository.save(pollution);
+        return pollutionRepository.save(pollution);
     }
 
-    public void uploadEmergency (Emergency emergency) {
+    public Emergency uploadEmergency (Emergency emergency) {
         emergency.setPollutant(pollutantRepository.findById(emergency.getPollutant().getId())
                 .orElseThrow(()-> new HttpClientErrorException(HttpStatusCode.valueOf(400))));
         emergency.setCompany(companyRepository.findById(emergency.getCompany().getId())
                 .orElseThrow(()-> new HttpClientErrorException(HttpStatusCode.valueOf(400))));
         calcService.calcEmergencyLoses(emergency);
-        emergencyRepository.save(emergency);
+        return emergencyRepository.save(emergency);
     }
 
-    public void updateCompany(Company company) {
+    public Company updateCompany(Company company) {
         Company currentCompany = companyRepository.findById(company.getId())
                 .orElseThrow(()->new HttpClientErrorException(HttpStatusCode.valueOf(404)));
         currentCompany.setCompanyName(Optional.ofNullable(company.getCompanyName()).orElse(currentCompany.getCompanyName()));
         currentCompany.setActivity(Optional.ofNullable(company.getActivity()).orElse(currentCompany.getActivity()));
         currentCompany.setLocation(Optional.ofNullable(company.getLocation()).orElse(currentCompany.getLocation()));
-        companyRepository.save(currentCompany);
+        return companyRepository.save(currentCompany);
     }
 
-    public void updatePollutant(Pollutant pollutant) {
+    public Pollutant updatePollutant(Pollutant pollutant) {
         Pollutant currentPollutant = pollutantRepository.findById(pollutant.getId())
                 .orElseThrow(()->new HttpClientErrorException(HttpStatusCode.valueOf(404)));
         currentPollutant.setPollutantName(Optional.ofNullable(pollutant.getPollutantName()).orElse(currentPollutant.getPollutantName()));
@@ -218,17 +229,17 @@ public class DataService {
             currentPollutant.setPollutantType(pollutantTypeRepository.findById(Optional.ofNullable(pollutant.getPollutantType().getId())
                     .orElse(currentPollutant.getPollutantType().getId())).get());
         currentPollutant.setTaxRate(pollutant.getTaxRate());
-        pollutantRepository.save(currentPollutant);
+        return pollutantRepository.save(currentPollutant);
     }
 
-    public void updatePollutantType(PollutantType pollutantType) {
+    public PollutantType updatePollutantType(PollutantType pollutantType) {
         PollutantType currentPollutantType = pollutantTypeRepository.findById(pollutantType.getId())
                 .orElseThrow(()->new HttpClientErrorException(HttpStatusCode.valueOf(404)));
         currentPollutantType.setPollutantTypeName(Optional.ofNullable(pollutantType.getPollutantTypeName()).orElse(currentPollutantType.getPollutantTypeName()));
-        pollutantTypeRepository.save(currentPollutantType);
+        return pollutantTypeRepository.save(currentPollutantType);
     }
 
-    public void updatePollution(Pollution pollution) {
+    public Pollution updatePollution(Pollution pollution) {
         Pollution currentPollution = pollutionRepository.findById(pollution.getId())
                 .orElseThrow(()->new HttpClientErrorException(HttpStatusCode.valueOf(404)));
         if (pollution.getCompany()!=null)
@@ -245,10 +256,10 @@ public class DataService {
         currentPollution.setCr(calcService.calcCr(currentPollution.getPollutionConcentration(), currentPollution.getPollutant().getSf()));
         currentPollution.setPenalty(calcService.calcAirPenalty(currentPollution.getPollutionValue(), currentPollution.getPollutionValue(), currentPollution.getPollutant().getTlv()));
         currentPollution.setTax(calcService.calcTax(currentPollution.getPollutant().getMfr(), currentPollution.getPollutant().getTaxRate()));
-        pollutionRepository.save(currentPollution);
+        return pollutionRepository.save(currentPollution);
     }
 
-    public void updateEmergency (Emergency emergency) {
+    public Emergency updateEmergency (Emergency emergency) {
         Emergency currentEmergency = emergencyRepository.findById(emergency.getId())
                 .orElseThrow(()->new HttpClientErrorException(HttpStatusCode.valueOf(404)));
         if (emergency.getCompany()!=null)
@@ -264,7 +275,7 @@ public class DataService {
         currentEmergency.setPollutionValue(Optional.ofNullable(emergency.getPollutionValue()).orElse(currentEmergency.getPollutionValue()));
         currentEmergency.setPollutionConcentration(Optional.ofNullable(emergency.getPollutionConcentration()).orElse(currentEmergency.getPollutionConcentration()));
         calcService.calcEmergencyLoses(currentEmergency);
-        emergencyRepository.save(currentEmergency);
+        return emergencyRepository.save(currentEmergency);
     }
 
     public void deleteCompany(List<Long> ids) {

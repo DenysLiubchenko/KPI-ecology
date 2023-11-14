@@ -27,50 +27,50 @@ public class DataController {
 
     @PostMapping("/upload/csv/company")
     @ResponseStatus(HttpStatus.CREATED)
-    public void uploadCompany(@RequestParam("file") MultipartFile file) throws IOException {
-        dataService.uploadCompany(new String(file.getBytes(), "WINDOWS-1251"));
+    public List<Company> uploadCompany(@RequestParam("file") MultipartFile file) throws IOException {
+        return dataService.uploadCompany(new String(file.getBytes(), "WINDOWS-1251"));
     }
 
     @PostMapping("/upload/csv/pollutant")
     @ResponseStatus(HttpStatus.CREATED)
-    public void uploadPollutant(@RequestParam("file") MultipartFile file) throws IOException {
-        dataService.uploadPollutant(new String(file.getBytes(), "WINDOWS-1251"));
+    public List<Pollutant> uploadPollutant(@RequestParam("file") MultipartFile file) throws IOException {
+        return dataService.uploadPollutant(new String(file.getBytes(), "WINDOWS-1251"));
     }
 
     @PostMapping("/upload/csv/pollution")
     @ResponseStatus(HttpStatus.CREATED)
-    public void uploadPollution(@RequestParam("file") MultipartFile file) throws IOException {
-        dataService.uploadPollution(new String(file.getBytes(), "WINDOWS-1251"));
+    public List<Pollution> uploadPollution(@RequestParam("file") MultipartFile file) throws IOException {
+        return dataService.uploadPollution(new String(file.getBytes(), "WINDOWS-1251"));
     }
 
     @PostMapping("/upload/company")
     @ResponseStatus(HttpStatus.CREATED)
-    public void uploadCompany(@RequestBody Company company) {
-        dataService.uploadCompany(company);
+    public Company uploadCompany(@RequestBody Company company) {
+        return dataService.uploadCompany(company);
     }
 
     @PostMapping("/upload/pollutant")
     @ResponseStatus(HttpStatus.CREATED)
-    public void uploadPollutant(@RequestBody Pollutant pollutant) {
-        dataService.uploadPollutant(pollutant);
+    public Pollutant uploadPollutant(@RequestBody Pollutant pollutant) {
+        return dataService.uploadPollutant(pollutant);
     }
 
     @PostMapping("/upload/pollutantType")
     @ResponseStatus(HttpStatus.CREATED)
-    public void uploadPollutantType(@RequestBody PollutantType pollutantType) {
-        dataService.uploadPollutantType(pollutantType);
+    public PollutantType uploadPollutantType(@RequestBody PollutantType pollutantType) {
+        return dataService.uploadPollutantType(pollutantType);
     }
 
     @PostMapping("/upload/pollution")
     @ResponseStatus(HttpStatus.CREATED)
-    public void uploadPollution(@RequestBody Pollution pollution) {
-        dataService.uploadPollution(pollution);
+    public Pollution uploadPollution(@RequestBody Pollution pollution) {
+        return dataService.uploadPollution(pollution);
     }
 
     @PostMapping("/upload/emergency")
     @ResponseStatus(HttpStatus.CREATED)
-    public void uploadEmergency(@RequestBody Emergency emergency) {
-        dataService.uploadEmergency(emergency);
+    public Emergency uploadEmergency(@RequestBody Emergency emergency) {
+        return dataService.uploadEmergency(emergency);
     }
 
     @GetMapping("/get/company")
@@ -124,32 +124,32 @@ public class DataController {
 
     @PostMapping("/update/company")
     @ResponseStatus(HttpStatus.CREATED)
-    public void updateCompany (@RequestBody Company company) {
-        dataService.updateCompany(company);
+    public Company updateCompany (@RequestBody Company company) {
+        return dataService.updateCompany(company);
     }
 
     @PostMapping("/update/pollutant")
     @ResponseStatus(HttpStatus.CREATED)
-    public void updatePollutant (@RequestBody Pollutant pollutant) {
-        dataService.updatePollutant(pollutant);
+    public Pollutant updatePollutant (@RequestBody Pollutant pollutant) {
+        return dataService.updatePollutant(pollutant);
     }
 
     @PostMapping("/update/pollutantType")
     @ResponseStatus(HttpStatus.CREATED)
-    public void updatePollutantType(@RequestBody PollutantType pollutantType) {
-        dataService.updatePollutantType(pollutantType);
+    public PollutantType updatePollutantType(@RequestBody PollutantType pollutantType) {
+        return dataService.updatePollutantType(pollutantType);
     }
 
     @PostMapping("/update/pollution")
     @ResponseStatus(HttpStatus.CREATED)
-    public void updatePollution (@RequestBody Pollution pollution) {
-        dataService.updatePollution(pollution);
+    public Pollution updatePollution (@RequestBody Pollution pollution) {
+        return dataService.updatePollution(pollution);
     }
 
     @PostMapping("/update/emergency")
     @ResponseStatus(HttpStatus.CREATED)
-    public void updateEmergency (@RequestBody Emergency emergency) {
-        dataService.updateEmergency(emergency);
+    public Emergency updateEmergency (@RequestBody Emergency emergency) {
+        return dataService.updateEmergency(emergency);
     }
 
     @PostMapping("/delete/company")
