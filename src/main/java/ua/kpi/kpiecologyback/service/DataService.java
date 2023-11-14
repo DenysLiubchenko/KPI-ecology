@@ -68,11 +68,10 @@ public class DataService {
 
             company.setLocation(Objects.requireNonNull(values.poll()).trim());
             if (!companyNames.contains(company.getCompanyName())) {
-                companyRepository.save(company);
                 companyList.add(company);
             }
         }
-        return companyList;
+        return companyRepository.saveAll(companyList);
     }
 
     public List<Pollutant> uploadPollutant(String data) {
@@ -105,11 +104,11 @@ public class DataService {
             pollutant.setTaxRate(Double.parseDouble(Objects.requireNonNull(values.poll()).replace(",", ".")));
 
             if (!pollutants.contains(pollutant)) {
-                pollutantRepository.save(pollutant);
+
                 pollutantList.add(pollutant);
             }
         }
-        return pollutantList;
+        return pollutantRepository.saveAll(pollutantList);
     }
 
     public List<Pollution> uploadPollution(String data) {
@@ -150,11 +149,10 @@ public class DataService {
                             pollution1.getPollutant().getPollutantName().equals(pollutant.getPollutantName()) &&
                             pollution1.getCompany().getCompanyName().equals(company.getCompanyName()) &&
                             pollution1.getYear().equals(pollution.getYear()))) {
-                pollutionRepository.save(pollution);
                 pollutionList.add(pollution);
             }
         }
-        return pollutionList;
+        return pollutionRepository.saveAll(pollutionList);
     }
 
     private Queue<String> csvParser (String line) {
