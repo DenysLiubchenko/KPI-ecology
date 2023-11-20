@@ -40,7 +40,7 @@ public class CalcService {
     }
 
     public double calcEmergencyPeopleLoss (Emergency emergency) {
-        return 0.28*emergency.getPeopleMinorInjury()+6.5*emergency.getPeopleSeriousInjury()+37*emergency.getPeopleDisability()+47*emergency.getPeopleDead();
+        return (0.28*emergency.getPeopleMinorInjury()+6.5*emergency.getPeopleSeriousInjury()+37*emergency.getPeopleDisability()+47*emergency.getPeopleDead())*100;
     }
 
     public double calcEmergencyPollutionAirLoss (Emergency emergency) {
